@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Login – JSPL Training MS</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<style>
+/* ─── RESET & VARS ──────────────────────────────── */
+:root{
+  --pri:#7c6ef5; --pri-lt:#a89cf8; --pri-dk:#5a4de0;
+  --accent:#f472b6; --emerald:#10b981; --danger:#f43f5e;
+  --text:#1e1b4b; --muted:#8b8aaa;
+  --border:rgba(124,110,245,.15); --radius:1.2rem;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+
+body{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  background:linear-gradient(135deg,#e0d7ff 0%,#f3e8ff 30%,#fce7f3 60%,#fff1eb 100%);
+  min-height:100vh;
+  display:flex; align-items:center; justify-content:center;
+  padding:1rem; color:var(--text); position:relative; overflow-x:hidden;
+}
+body::before{
+  content:''; position:fixed; top:-130px; left:-130px;
+  width:500px; height:500px;
+  background:radial-gradient(circle,rgba(124,110,245,.16) 0%,transparent 70%);
+  border-radius:50%; pointer-events:none;
+  animation:blob 9s ease-in-out infinite;
+}
+body::after{
+  content:''; position:fixed; bottom:-100px; right:-80px;
+  width:420px; height:420px;
+  background:radial-gradient(circle,rgba(244,114,182,.16) 0%,transparent 70%);
+  border-radius:50%; pointer-events:none;
+  animation:blob 11s ease-in-out infinite reverse;
+}
+@keyframes blob{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-28px) scale(1.05);}}
+
+/* ─── OUTER CARD ────────────────────────────────── */
+.card{
+  width:100%; max-width:960px;
+  background:rgba(255,255,255,.78);
+  backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+  border:1.5px solid rgba(255,255,255,.78);
+  border-radius:2rem;
+  box-shadow:0 20px 70px rgba(124,110,245,.14),0 2px 10px rgba(0,0,0,.05);
+  display:flex; overflow:hidden;
+  min-height:600px; position:relative; z-index:10;
+  animation:rise .5s cubic-bezier(.22,.85,.36,1) both;
+}
+@keyframes rise{from{opacity:0;transform:translateY(32px) scale(.97);}to{opacity:1;transform:none;}}
+
+/* ════════════════════════════════════════════
+   LEFT PANEL
+════════════════════════════════════════════ */
+.lp{
+  width:420px; min-width:420px;
+  background:linear-gradient(150deg,#4f3fd1 0%,#7c6ef5 42%,#c084fc 78%,#f472b6 100%);
+  position:relative; overflow:hidden;
+  display:flex; flex-direction:column; align-items:center;
+  padding:2rem 2rem 1.8rem;
+}
+
+/* Soft blobs */
+.lp-blob{position:absolute;border-radius:50%;pointer-events:none;}
+.lb1{width:300px;height:300px;background:rgba(255,255,255,.07);top:-85px;left:-85px;}
+.lb2{width:200px;height:200px;background:rgba(255,255,255,.06);bottom:-55px;left:-45px;}
+.lb3{width:120px;height:120px;background:rgba(255,255,255,.05);top:40%;right:30px;}
+
+/* Brand */
+.lp-brand{
+  display:flex; align-items:center; gap:.65rem;
+  align-self:flex-start; margin-bottom:1.5rem; position:relative; z-index:4;
+}
+.lp-brand-icon{
+  width:42px; height:42px;
+  background:rgba(255,255,255,.22); border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  color:#fff; font-size:1.2rem; border:1.5px solid rgba(255,255,255,.3);
+}
+.lp-brand-name{font-size:1.25rem;font-weight:800;color:#fff;letter-spacing:-.4px;}
+
+/* ── SLIDER ─────────────────────────────────────── */
+.slider-wrap{
+  position:relative; width:100%;
+  z-index:4; flex:1; display:flex; flex-direction:column; min-height:0;
+}
+.slider-track{
+  position:relative; width:100%; flex:1; min-height:180px;
+  overflow:hidden; border-radius:1.25rem;
+  box-shadow:0 16px 44px rgba(0,0,0,.26);
+  border:2px solid rgba(255,255,255,.28);
+}
+.slide{
+  position:absolute; inset:0;
+  opacity:0; transition:opacity .65s ease, transform .65s ease;
+  transform:scale(1.04);
+}
+.slide.active{opacity:1; transform:scale(1);}
+.slide img{width:100%;height:100%;object-fit:cover;display:block;}
+.slide-overlay{
+  position:absolute; inset:0;
+  background:linear-gradient(to top,rgba(60,44,190,.65) 0%,rgba(60,44,190,.1) 55%,transparent 100%);
+}
+.slide-caption{
+  position:absolute; bottom:0; left:0; right:0;
+  padding:.85rem 1rem .8rem; color:#fff;
+}
+.slide-caption-title{font-size:.84rem;font-weight:800;margin-bottom:.12rem;}
+.slide-caption-sub  {font-size:.7rem;opacity:.82;font-weight:500;}
+
+/* Controls */
+.slider-controls{
+  display:flex; align-items:center; justify-content:space-between;
+  margin-top:.9rem; position:relative; z-index:4;
+}
+.sdots{display:flex;gap:.38rem;align-items:center;}
+.sdot{
+  width:7px; height:7px; border-radius:50%;
+  background:rgba(255,255,255,.32); border:none; padding:0;
+  cursor:pointer; transition:all .3s;
+}
+.sdot.on{width:20px;border-radius:4px;background:#fff;}
+.sarrows{display:flex;gap:.45rem;}
+.sarrow{
+  width:28px; height:28px; border-radius:50%;
+  background:rgba(255,255,255,.18); border:1.5px solid rgba(255,255,255,.32);
+  display:flex; align-items:center; justify-content:center;
+  color:#fff; cursor:pointer; transition:all .2s;
+}
+.sarrow:hover{background:rgba(255,255,255,.32);}
+
+/* Tagline */
+.lp-tagline{
+  position:relative; z-index:4; text-align:center;
+  margin-top:.9rem; color:rgba(255,255,255,.9);
+}
+.lp-tagline h3{font-size:.98rem;font-weight:800;margin-bottom:.2rem;}
+.lp-tagline p {font-size:.72rem;opacity:.78;font-weight:500;}
+
+/* ════════════════════════════════════════════
+   RIGHT PANEL
+════════════════════════════════════════════ */
+.rp{
+  flex:1; min-width:0;
+  padding:2.5rem 2.4rem 2rem;
+  display:flex; flex-direction:column; justify-content:center;
+  overflow-y:auto;
+}
+
+.rp-heading{margin-bottom:1.4rem;}
+.rp-heading h2{font-size:1.4rem;font-weight:800;color:var(--text);margin-bottom:.25rem;}
+.rp-heading p {font-size:.83rem;color:var(--muted);font-weight:500;}
+
+/* Form */
+.fg{margin-bottom:.95rem;}
+.fl{display:block;font-size:.77rem;font-weight:700;color:var(--text);margin-bottom:.35rem;}
+
+.iw{position:relative;}
+.iw .ii{
+  position:absolute; left:.85rem; top:50%; transform:translateY(-50%);
+  color:var(--muted); font-size:1rem; pointer-events:none; transition:color .2s;
+  font-family:'Material Icons Round'; font-weight:normal; font-style:normal;
+  display:inline-block; line-height:1; letter-spacing:normal;
+  text-transform:none; white-space:nowrap; word-wrap:normal; direction:ltr;
+  -webkit-font-feature-settings:'liga'; font-feature-settings:'liga';
+  -webkit-font-smoothing:antialiased;
+}
+.iw:focus-within .ii{color:var(--pri);}
+
+.fi{
+  width:100%;
+  background:rgba(124,110,245,.06); border:1.5px solid var(--border);
+  border-radius:var(--radius);
+  padding:.7rem 1rem .7rem 2.5rem;
+  font-size:.875rem; font-family:inherit; font-weight:500; color:var(--text);
+  transition:all .2s; outline:none;
+}
+.fi::placeholder{color:var(--muted);font-weight:400;}
+.fi:focus{border-color:var(--pri-lt);background:rgba(124,110,245,.09);box-shadow:0 0 0 3px rgba(124,110,245,.1);}
+
+.pwd-btn{
+  position:absolute; right:.82rem; top:50%; transform:translateY(-50%);
+  background:none; border:none; cursor:pointer; color:var(--muted);
+  display:flex; align-items:center; transition:color .2s; padding:0;
+}
+.pwd-btn:hover{color:var(--pri);}
+
+/* Remember + forgot */
+.row-extra{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+.rem-wrap{display:flex;align-items:center;gap:.45rem;cursor:pointer;user-select:none;}
+.chk{
+  width:17px; height:17px; border:2px solid var(--border); border-radius:5px;
+  background:rgba(124,110,245,.05);
+  display:flex; align-items:center; justify-content:center; transition:all .2s;
+}
+.chk.on{background:var(--pri);border-color:var(--pri);}
+.chk-ico{font-size:.78rem;color:#fff;display:none;}
+.chk.on .chk-ico{display:block;}
+.rem-lbl{font-size:.8rem;font-weight:600;color:var(--muted);}
+.fgt{font-size:.8rem;font-weight:700;color:var(--pri);text-decoration:none;transition:color .2s;}
+.fgt:hover{color:var(--pri-dk);text-decoration:underline;}
+
+/* CAPTCHA */
+.captcha-box{
+  background:rgba(124,110,245,.06); border:1.5px solid var(--border);
+  border-radius:var(--radius); padding:.75rem .95rem;
+  margin-bottom:1rem; display:flex; align-items:center; gap:.65rem; flex-wrap:wrap;
+}
+.cap-eq{
+  font-size:.95rem; font-weight:800; color:var(--pri);
+  background:rgba(124,110,245,.1); border-radius:.6rem;
+  padding:.26rem .6rem; white-space:nowrap;
+  border:1.5px solid rgba(124,110,245,.15); flex-shrink:0;
+}
+.cap-refresh{
+  background:none; border:none; cursor:pointer; color:var(--muted);
+  display:flex; align-items:center; transition:color .2s,transform .35s; padding:0; flex-shrink:0;
+}
+.cap-refresh:hover{color:var(--pri);transform:rotate(180deg);}
+.cap-in{
+  flex:1; min-width:80px;
+  background:rgba(255,255,255,.75); border:1.5px solid var(--border);
+  border-radius:.72rem; padding:.46rem .7rem;
+  font-size:.875rem; font-family:inherit; font-weight:700; color:var(--text);
+  outline:none; transition:all .2s;
+}
+.cap-in::placeholder{font-weight:400;color:var(--muted);}
+.cap-in:focus{border-color:var(--pri-lt);background:#fff;box-shadow:0 0 0 3px rgba(124,110,245,.1);}
+.cap-st{font-size:.85rem;font-weight:800;flex-shrink:0;min-width:16px;text-align:center;}
+.cap-st.ok {color:var(--emerald);}
+.cap-st.err{color:var(--danger);}
+
+/* Login button */
+.btn-login{
+  width:100%;
+  background:linear-gradient(135deg,var(--pri) 0%,var(--pri-dk) 100%);
+  color:#fff; border:none; border-radius:var(--radius);
+  padding:.8rem 1.5rem; font-size:.9rem; font-weight:800; font-family:inherit;
+  cursor:pointer; display:flex; align-items:center; justify-content:center; gap:.45rem;
+  box-shadow:0 5px 18px rgba(124,110,245,.38); transition:all .22s;
+  position:relative; overflow:hidden; margin-bottom:1.3rem;
+}
+.btn-login::after{
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.13),transparent);
+  opacity:0; transition:opacity .2s;
+}
+.btn-login:hover{transform:translateY(-2px);box-shadow:0 9px 26px rgba(124,110,245,.46);}
+.btn-login:hover::after{opacity:1;}
+.btn-login:disabled{opacity:.52;cursor:not-allowed;transform:none;box-shadow:none;}
+
+/* Register */
+.reg-row{text-align:center;font-size:.81rem;color:var(--muted);font-weight:500;}
+.reg-row a{color:var(--pri);font-weight:800;text-decoration:none;}
+.reg-row a:hover{color:var(--pri-dk);text-decoration:underline;}
+
+/* Alert */
+.alert{
+  border-radius:.8rem; padding:.58rem .85rem; font-size:.78rem; font-weight:600;
+  display:none; align-items:center; gap:.45rem; margin-bottom:.85rem;
+}
+.alert.show{display:flex;}
+.alert-err {background:rgba(244,63,94,.08);border:1.5px solid rgba(244,63,94,.2);color:var(--danger);}
+.alert-info{background:rgba(124,110,245,.08);border:1.5px solid rgba(124,110,245,.2);color:var(--pri);}
+
+/* Animations */
+@keyframes shake{0%,100%{transform:translateX(0);}20%,60%{transform:translateX(-6px);}40%,80%{transform:translateX(6px);}}
+.shake{animation:shake .38s ease;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ─── RESPONSIVE ────────────────────────────────── */
+
+/* Tablet landscape: shrink left panel */
+@media(max-width:900px){
+  .card{max-width:100%;}
+  .lp{width:360px;min-width:360px;padding:1.8rem 1.6rem 1.6rem;}
+}
+
+/* Tablet portrait / large mobile: stack vertically */
+@media(max-width:720px){
+  body{align-items:flex-start;padding:.75rem;}
+  .card{
+    flex-direction:column;
+    min-height:unset;
+    border-radius:1.5rem;
+    max-width:500px;
+    margin:0 auto;
+  }
+  .lp{
+    width:100%; min-width:unset;
+    padding:1.8rem 1.5rem 1.4rem;
+    border-radius:1.5rem 1.5rem 0 0;
+  }
+  .slider-wrap{max-height:260px;}
+  .slider-track{min-height:160px;}
+  .rp{padding:1.8rem 1.5rem 1.8rem;}
+}
+
+/* Small mobile */
+@media(max-width:480px){
+  body{padding:.5rem;}
+  .card{border-radius:1.25rem;}
+  .lp{padding:1.4rem 1.2rem 1.2rem;}
+  .rp{padding:1.5rem 1.2rem 1.5rem;}
+  .rp-heading h2{font-size:1.2rem;}
+  .captcha-box{flex-wrap:wrap;gap:.5rem;}
+  .cap-in{min-width:100%;order:3;}
+  .cap-st{order:4;}
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- ══ LEFT PANEL ═══════════════════════════════════════════ -->
+  <div class="lp">
+    <div class="lp-blob lb1"></div>
+    <div class="lp-blob lb2"></div>
+    <div class="lp-blob lb3"></div>
+
+    <!-- Brand -->
+    <div class="lp-brand">
+      <div class="lp-brand-icon">
+        <span class="material-icons-round">account_balance</span>
+      </div>
+      <div class="lp-brand-name">JSPL Training MS</div>
+    </div>
+
+
+
+    <!-- Image Slider -->
+    <div class="slider-wrap">
+      <div class="slider-track" id="sliderTrack">
+
+        <div class="slide active">
+          <img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=640&q=80" alt="Training"/>
+          <div class="slide-overlay"></div>
+          <div class="slide-caption">
+            <div class="slide-caption-title">Live Training Sessions</div>
+            <div class="slide-caption-sub">Learn from expert instructors in real-time</div>
+          </div>
+        </div>
+
+        <div class="slide">
+          <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=640&q=80" alt="Team"/>
+          <div class="slide-overlay"></div>
+          <div class="slide-caption">
+            <div class="slide-caption-title">Collaborative Learning</div>
+            <div class="slide-caption-sub">Work with peers on real-world projects</div>
+          </div>
+        </div>
+
+        <div class="slide">
+          <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=640&q=80" alt="Study"/>
+          <div class="slide-overlay"></div>
+          <div class="slide-caption">
+            <div class="slide-caption-title">Finance Management</div>
+            <div class="slide-caption-sub">Track payments and training costs easily</div>
+          </div>
+        </div>
+
+        <div class="slide">
+          <img src="https://images.unsplash.com/photo-1571260899304-425eee4c7efc?w=640&q=80" alt="Growth"/>
+          <div class="slide-overlay"></div>
+          <div class="slide-caption">
+            <div class="slide-caption-title">Grow Your Career</div>
+            <div class="slide-caption-sub">Certifications trusted by top companies</div>
+          </div>
+        </div>
+
+      </div><!-- /slider-track -->
+
+      <div class="slider-controls">
+        <div class="sdots" id="sdots">
+          <button class="sdot on" onclick="goTo(0)"></button>
+          <button class="sdot"    onclick="goTo(1)"></button>
+          <button class="sdot"    onclick="goTo(2)"></button>
+          <button class="sdot"    onclick="goTo(3)"></button>
+        </div>
+        <div class="sarrows">
+          <button class="sarrow" onclick="prevSlide()">
+            <span class="material-icons-round" style="font-size:.9rem">chevron_left</span>
+          </button>
+          <button class="sarrow" onclick="nextSlide()">
+            <span class="material-icons-round" style="font-size:.9rem">chevron_right</span>
+          </button>
+        </div>
+      </div>
+    </div><!-- /slider-wrap -->
+
+    <!-- Tagline -->
+    <div class="lp-tagline">
+      <h3>Build Skills. Drive Growth.</h3>
+      <p>JSPL's unified training &amp; finance platform</p>
+    </div>
+
+  </div><!-- /lp -->
+
+  <!-- ══ RIGHT PANEL ══════════════════════════════════════════ -->
+  <div class="rp">
+
+    <div class="rp-heading">
+      <h2>Welcome back 👋</h2>
+      <p>Sign in to your JSPL Training MS account</p>
+    </div>
+
+    <div class="alert alert-err" id="alertBox">
+      <span class="material-icons-round" style="font-size:.95rem">error_outline</span>
+      <span id="alertMsg">Invalid credentials. Please try again.</span>
+    </div>
+
+    <!-- Username -->
+    <div class="fg">
+      <label class="fl" for="username">Username / Employee ID</label>
+      <div class="iw">
+        <span class="ii">person_outline</span>
+        <input type="text" id="username" class="fi"
+          placeholder="Enter your username or employee ID" autocomplete="username"/>
+      </div>
+    </div>
+
+    <!-- Password -->
+    <div class="fg">
+      <label class="fl" for="password">Password</label>
+      <div class="iw">
+        <span class="ii">lock_outline</span>
+        <input type="password" id="password" class="fi"
+          placeholder="Enter your password" autocomplete="current-password"
+          style="padding-right:2.6rem;"/>
+        <button class="pwd-btn" type="button" onclick="togglePwd()">
+          <span class="material-icons-round" id="pwdIcon" style="font-size:.98rem">visibility_off</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Remember + Forgot -->
+    <div class="row-extra">
+      <div class="rem-wrap" onclick="toggleRemember()">
+        <div class="chk" id="remBox">
+          <span class="material-icons-round chk-ico">check</span>
+        </div>
+        <span class="rem-lbl">Remember me</span>
+      </div>
+      <a href="#" class="fgt">Forgot password?</a>
+    </div>
+
+    <!-- CAPTCHA -->
+    <div class="fg">
+      <label class="fl">Security Check</label>
+      <div class="captcha-box">
+        <span class="cap-eq" id="capEq">— + — = ?</span>
+        <button class="cap-refresh" type="button" onclick="newCaptcha()" title="New question">
+          <span class="material-icons-round" style="font-size:.98rem">refresh</span>
+        </button>
+        <input type="number" class="cap-in" id="capIn"
+          placeholder="Your answer" min="0" max="999" oninput="checkCap()"/>
+        <span class="cap-st" id="capSt"></span>
+      </div>
+    </div>
+
+    <!-- Sign In -->
+    <button class="btn-login" id="loginBtn" type="button" onclick="doLogin()" disabled>
+      <span class="material-icons-round" style="font-size:1rem">login</span>
+      Sign In
+    </button>
+
+    <!-- Register -->
+    <div class="reg-row">
+      Don't have an account? <a href="#">Request access here</a>
+    </div>
+
+  </div><!-- /rp -->
+</div><!-- /card -->
+
+<script>
+/* ── SLIDER ───────────────────────────────────────── */
+const slides = document.querySelectorAll('.slide');
+const dots   = document.querySelectorAll('.sdot');
+let cur = 0, timer = null;
+
+function goTo(n){
+  slides[cur].classList.remove('active');
+  dots[cur].classList.remove('on');
+  cur = (n + slides.length) % slides.length;
+  slides[cur].classList.add('active');
+  dots[cur].classList.add('on');
+  restartTimer();
+}
+function nextSlide(){ goTo(cur + 1); }
+function prevSlide(){ goTo(cur - 1); }
+function restartTimer(){ clearInterval(timer); timer = setInterval(()=>goTo(cur+1), 4000); }
+restartTimer();
+
+/* ── CAPTCHA ──────────────────────────────────────── */
+let capAns = 0;
+const OPS  = ['+','−','×'];
+function rand(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+
+function newCaptcha(){
+  const op = OPS[Math.floor(Math.random()*OPS.length)];
+  let a,b;
+  if(op==='+'){a=rand(1,30);b=rand(1,30);capAns=a+b;}
+  else if(op==='−'){a=rand(12,40);b=rand(1,a);capAns=a-b;}
+  else{a=rand(2,9);b=rand(2,9);capAns=a*b;}
+  document.getElementById('capEq').textContent=`${a}  ${op}  ${b}  =  ?`;
+  document.getElementById('capIn').value='';
+  const s=document.getElementById('capSt');
+  s.textContent=''; s.className='cap-st';
+  refreshBtn();
+}
+
+function checkCap(){
+  const raw=document.getElementById('capIn').value;
+  const val=parseInt(raw,10);
+  const s=document.getElementById('capSt');
+  if(raw===''){s.textContent='';s.className='cap-st';}
+  else if(val===capAns){s.textContent='✓';s.className='cap-st ok';}
+  else{s.textContent='✗';s.className='cap-st err';}
+  refreshBtn();
+}
+
+function isCapOk(){ return parseInt(document.getElementById('capIn').value,10)===capAns; }
+
+/* ── FORM ─────────────────────────────────────────── */
+function refreshBtn(){
+  const u=document.getElementById('username').value.trim();
+  const p=document.getElementById('password').value;
+  document.getElementById('loginBtn').disabled=!(u&&p&&isCapOk());
+}
+document.getElementById('username').addEventListener('input',refreshBtn);
+document.getElementById('password').addEventListener('input',refreshBtn);
+
+function togglePwd(){
+  const f=document.getElementById('password');
+  const i=document.getElementById('pwdIcon');
+  f.type=f.type==='password'?'text':'password';
+  i.textContent=f.type==='password'?'visibility_off':'visibility';
+}
+
+function toggleRemember(){
+  document.getElementById('remBox').classList.toggle('on');
+}
+
+function doLogin(){
+  if(!isCapOk()){showMsg('Incorrect answer. Please try again.',false);newCaptcha();return;}
+  const btn=document.getElementById('loginBtn');
+  btn.innerHTML=`<span class="material-icons-round" style="animation:spin 1s linear infinite;font-size:1rem">autorenew</span>&nbsp;Signing in…`;
+  btn.disabled=true;
+  document.getElementById('alertBox').classList.remove('show');
+  setTimeout(()=>{
+    btn.innerHTML=`<span class="material-icons-round" style="font-size:1rem">login</span> Sign In`;
+    btn.disabled=false;
+    showMsg('Demo mode — no server connected.',true);
+  },1800);
+}
+
+function showMsg(msg,isInfo){
+  const el=document.getElementById('alertBox');
+  document.getElementById('alertMsg').textContent=msg;
+  el.className='alert show '+(isInfo?'alert-info':'alert-err');
+  document.querySelector('.rp').classList.add('shake');
+  setTimeout(()=>document.querySelector('.rp').classList.remove('shake'),420);
+}
+
+newCaptcha();
+</script>
+</body>
+</html>
